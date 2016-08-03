@@ -1,7 +1,7 @@
 # minoshirokin
 
 身の代金  
-Reading: みしろきん (minoshirokin)  
+Reading: みのしろきん (minoshirokin)  
 Noun 1. ransom
 
 A web application which create ransom notes.
