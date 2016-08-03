@@ -5,23 +5,206 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>minoshirokin</title>
     <style>
+      * { box-sizing: border-box }
       body{ /* from bettermotherfuckingwebsite.com and safeme.ga */
         margin:40px auto;
         max-width:650px;
         line-height:1.6;
         font-size:18px;
         color:#444;
-        padding:0 10px
+        padding:0 10px;
+        background: #EEE
       }
       h1,h2,h3{ line-height:1.2 }
-      h1 small, output{ display: block; }
-      .view { display: none; }
-      .current.view { display: block; }
-      .important { color: #D22; }
+      h1, p{ text-align:center }
+      .output {
+        margin: 1em auto 2em;
+        padding: 1em;
+        text-align: center;
+        /* https://philiprogers.com/svgpatterns/#specklednoise */
+        background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCI+CjxmaWx0ZXIgaWQ9Im4iPgo8ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjciIG51bU9jdGF2ZXM9IjEwIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIj48L2ZlVHVyYnVsZW5jZT4KPC9maWx0ZXI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWxsPSIjRkZGIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWx0ZXI9InVybCgjbikiIG9wYWNpdHk9IjAuNCI+PC9yZWN0Pgo8L3N2Zz4=");
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        min-height: 2em;
+        position: relative;
+        width: 80%;
+      }
+      .output:before, .output:after {
+        content: "";
+        height: 98%;
+        position: absolute;
+        width: 100%;
+        z-index: -1;
+      }
+      .output:before {
+        background: #EEE;
+        box-shadow: 0 0 8px rgba(0,0,0,0.2);
+        left: -5px;
+        top: 4px;
+        transform: rotate(-2.5deg);
+      }
+      .output:after {
+        background: #EEE;
+        box-shadow: 0 0 3px rgba(0,0,0,0.2);
+        right: -3px;
+        top: 1px;
+        transform: rotate(1.4deg);
+      }
+      textarea, select, button {
+        width:100%;
+        border:1px solid #444;
+        padding:2px
+      }
+      textarea { min-height:5em; }
+      .color-options { font-size:0 }
+      .color-options input { width:10% }
     </style>
   </head>
   <body>
     <h1>minoshirokin</h1>
-    <p>work in progress...</p>
+    <form autocomplete="off">
+      <textarea placeholder="type your ransom note here"></textarea>
+      <button>create ransom note</button>
+      
+      <div class="output"></div>
+      
+      <fieldset>
+        <legend>colors</legend>
+        <select>
+          <option>color presets (work in progress)</option>
+        </select>
+        <div class="color-options">
+          <input type=color><input type=color><input type=color>
+          <input type=color><input type=color><input type=color>
+          <input type=color><input type=color><input type=color>
+          <input type=color>
+        </div>
+      </fieldset>
+      
+      <fieldset>
+        <legend>fonts</legend>
+        one font per line. repeated fonts will be used more.
+        <textarea id="fonts"></textarea>
+      </fieldset>
+      
+      <fieldset>
+        <legend>sizes</legend>
+        work in progress
+      </fieldset>
+      
+      <fieldset>
+        <legend>weights</legend>
+        work in progress
+      </fieldset>
+      
+      <fieldset>
+        <legend>italics</legend>
+        work in progress
+      </fieldset>
+      
+      <fieldset>
+        <legend>case</legend>
+        work in progress
+      </fieldset>
+    </form>
+    
+    <p>inspirated by <a href="http://www.ransomizer.com/">www.ransomizer.com</a></p>
+    
+    <script>
+      const $ = document.querySelector.bind(document)
+      const form = $('form')
+      const textarea = $('textarea')
+      const output = $('.output')
+      let fonts = []
+      const fontInput = $('#fonts')
+      let colors = []
+      const colorInputs = document.querySelectorAll('input[type="color"]')
+      let shadowX, shadowY
+      
+      form.addEventListener('submit', handleSubmit)
+      
+      for (input of colorInputs) {
+        input.value = '#' + [1,2,3].map(e=>('00'+rand(120, 255).toString(16)).substr(-2)).join('')
+      }
+      
+      fontInput.value = ['serif', 'sans-serif', 'monospace', 'cursive'].join('\r\n')
+      
+      function rand(min, max) {       
+        const byteArray = new Uint16Array(1)
+        crypto.getRandomValues(byteArray)
+
+        const range = max - min + 1
+        const maxRange = 256 * 256
+        if (byteArray[0] >= Math.floor(maxRange / range) * range) {
+          return rand(min, max)
+        }
+        return min + (byteArray[0] % range)
+      }
+      
+      function handleSubmit (evt) {
+        evt.preventDefault()
+        fonts = fontInput.value.split(/\s*[\r\n]+\s*/g)
+        colors = []
+        for (input of colorInputs) {
+          colors.push(input.value)
+        }
+        
+        shadowX = rand(-2, 2)
+        shadowY = rand(-2, 2)
+        
+        const text = textarea.value || `We kidnap out here, and the work and
+        mutated the person used up as plague to gang him. There responded a
+        TTP like a government old if it phished in company. He exploded the
+        place then part they "secure" the Hound. There burst a government,
+        mutating, group. "generated by scaremail-generator"`
+        
+        output.innerHTML = ''
+        text.split(' ')
+        .forEach(word => {
+          if (!word) return
+          if (rand(0, 100) < 90) {
+            letter2html.call(output, word)
+          } else {
+            const el = document.createElement('div')
+            Object.assign(el.style, {
+              margin: '0 ' + rand(5, 20) + 'px',
+              display: 'inline-block'
+            })
+            word.split('').forEach(letter2html, el)
+            output.appendChild(el)
+          }
+        })
+      }
+      
+      function letter2html (letter) {
+        if (!letter.trim()) return
+        const el = document.createElement('div')
+        el.textContent = letter
+        Object.assign(el.style, {
+          display: 'inline-block',
+          transform: `rotate(${rand(-2, 2)}deg) skewX(${rand(-1, 1)}deg) skewY(${rand(-1, 1)}deg) translate(0, ${rand(-3, 3)}px)`,
+          background: `linear-gradient(${rand(0, 180)}deg, transparent, hsla(0, 0%, ${rand(0, 10)}%, ${rand(0, 5)/100})),
+          linear-gradient(${rand(170, 190)}deg, transparent ${rand(30, 50)}%, hsla(0, 0%, 0%, ${rand(0, 10)/100}) ${rand(50, 80)}%),
+          ${colors[rand(0, 9)]}`,
+          margin: `${rand(-15, 5)}px ${rand(0, 5)}px`,
+          padding: `${rand(1, 8)}px ${rand(1, 8)}px`,
+          boxShadow: `${shadowX * rand(0, 2)}px ${shadowY * rand(0, 2)}px ${rand(0, 5)}px hsla(0, 0%, ${rand(0, 10)}%, ${rand(0, 30)/100})`,
+          textShadow: `${shadowX * rand(0, 2)}px ${shadowY * rand(0, 2)}px ${rand(0, 5)}px hsla(0, 0%, ${rand(0, 10)}%, ${rand(0, 10)/100})`,
+          color: `hsl(0, 0%, ${rand(0, 20)}%)`,
+          zIndex: rand(0, 1000),
+          borderRadius: `${rand(0, 3)}px ${rand(0, 3)}px ${rand(0, 3)}px ${rand(0, 3)}px`,
+          fontFamily: fonts[rand(0, fonts.length - 1)],
+          position: 'relative'
+        })
+        this.appendChild(el)
+      }
+    </script>
+    <script>
+      if (typeof $ === 'undefined' || !window.crypto ||
+        !crypto.getRandomValues) (function () {
+        var btn = document.querySelector('button')
+        btn.setAttribute('disabled', 'disabled')
+        btn.innerHTML = 'browser not supported'
+      }());
+    </script>
   </body>
 </html>
