@@ -17,16 +17,18 @@
       }
       h1,h2,h3{ line-height:1.2 }
       h1, p{ text-align:center }
+      .output-container {
+        padding: 2em;
+      }
       .output {
-        margin: 1em auto 2em;
-        padding: 1em;
+        margin: 0 auto 1em;
+        padding: 0.5em;
         text-align: center;
         /* https://philiprogers.com/svgpatterns/#specklednoise */
         background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCI+CjxmaWx0ZXIgaWQ9Im4iPgo8ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjciIG51bU9jdGF2ZXM9IjEwIiBzdGl0Y2hUaWxlcz0ic3RpdGNoIj48L2ZlVHVyYnVsZW5jZT4KPC9maWx0ZXI+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWxsPSIjRkZGIj48L3JlY3Q+CjxyZWN0IHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIiBmaWx0ZXI9InVybCgjbikiIG9wYWNpdHk9IjAuNCI+PC9yZWN0Pgo8L3N2Zz4=");
         box-shadow: 0 0 10px rgba(0,0,0,0.3);
         min-height: 2em;
         position: relative;
-        width: 80%;
       }
       .output:before, .output:after {
         content: "";
@@ -61,11 +63,14 @@
   </head>
   <body>
     <h1>minoshirokin</h1>
-    <form autocomplete="off">
+    <form>
       <textarea placeholder="type your ransom note here"></textarea>
-      <button>create ransom note</button>
+      <button autocomplete="off">create ransom note</button>
       
-      <div class="output"></div>
+      <div class="output-container">
+        <div class="output"></div>
+      </div>
+      <button autocomplete="off" id="save">save generated note as image</button>
       
       <fieldset>
         <legend>colors</legend>
@@ -114,19 +119,42 @@
       const form = $('form')
       const textarea = $('textarea')
       const output = $('.output')
+      const saveBtn = $('#save')
+      
       let fonts = []
       const fontInput = $('#fonts')
       let colors = []
       const colorInputs = document.querySelectorAll('input[type="color"]')
       let shadowX, shadowY
+      const decorations = [
+        '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '',
+        'underline', 'underline',
+        'underline', 'underline',
+        'underline', 'underline',
+        'underline', 'underline',
+        'line-through'
+      ]
+      const transforms = [
+        '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '',
+        'capitalize', 'uppercase',
+        'lowercase', 'full-width'
+      ]
+      
+      saveBtn.setAttribute('disabled', 'disabled')
       
       form.addEventListener('submit', handleSubmit)
+      saveBtn.addEventListener('click', handleSave)
       
       for (input of colorInputs) {
         input.value = '#' + [1,2,3].map(e=>('00'+rand(120, 255).toString(16)).substr(-2)).join('')
       }
       
-      fontInput.value = ['serif', 'sans-serif', 'monospace', 'cursive'].join('\r\n')
+      fontInput.value = fontInput.value || ['serif', 'sans-serif', 'monospace', 'cursive'].join('\r\n')
       
       function rand(min, max) {       
         const byteArray = new Uint16Array(1)
@@ -161,7 +189,7 @@
         text.split(' ')
         .forEach(word => {
           if (!word) return
-          if (rand(0, 100) < 90) {
+          if (rand(0, 1) === 0) {
             letter2html.call(output, word)
           } else {
             const el = document.createElement('div')
@@ -173,6 +201,14 @@
             output.appendChild(el)
           }
         })
+        
+        output.style.transform = `
+          perspective(${rand(200, 600)}px)
+          rotateX(${rand(-3, 3)}deg)
+          rotateY(${rand(-3, 3)}deg)
+        `;
+        
+        saveBtn.removeAttribute('disabled')
       }
       
       function letter2html (letter) {
@@ -183,6 +219,7 @@
           display: 'inline-block',
           transform: `rotate(${rand(-2, 2)}deg) skewX(${rand(-1, 1)}deg) skewY(${rand(-1, 1)}deg) translate(0, ${rand(-3, 3)}px)`,
           background: `linear-gradient(${rand(0, 180)}deg, transparent, hsla(0, 0%, ${rand(0, 10)}%, ${rand(0, 5)/100})),
+          ${rand(0, 3) === 0 ? `url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjY2NjIj48L3JlY3Q+Cjwvc3ZnPg==),` : ''}
           linear-gradient(${rand(170, 190)}deg, transparent ${rand(30, 50)}%, hsla(0, 0%, 0%, ${rand(0, 10)/100}) ${rand(50, 80)}%),
           ${colors[rand(0, 9)]}`,
           margin: `${rand(-15, 5)}px ${rand(0, 5)}px`,
@@ -193,18 +230,41 @@
           zIndex: rand(0, 1000),
           borderRadius: `${rand(0, 3)}px ${rand(0, 3)}px ${rand(0, 3)}px ${rand(0, 3)}px`,
           fontFamily: fonts[rand(0, fonts.length - 1)],
+          fontSize: (rand(9, 13) / 10) + 'em',
+          letterSpacing: (rand(-1, 5) / 10) + 'em',
+          textDecoration: decorations[rand(0, decorations.length - 1)],
+          textTransform: transforms[rand(0, transforms.length - 1)] || 'none',
+          fontWeight: `${rand(0, 9)}00`,
           position: 'relative'
         })
         this.appendChild(el)
       }
+      
+      function handleSave (evt) {
+        evt.preventDefault()
+        domToImage.toPng($('.output-container'))
+        .then(dataUrl => {
+          const anchor = document.createElement('a')
+          anchor.href = dataUrl
+          anchor.download = 'random.png'
+          document.body.appendChild(anchor)
+          anchor.click()
+          document.body.removeChild(anchor)
+        })
+      }
     </script>
-    <script>
+    
+    <script> // show when it's not working for no ES6 support
       if (typeof $ === 'undefined' || !window.crypto ||
         !crypto.getRandomValues) (function () {
         var btn = document.querySelector('button')
         btn.setAttribute('disabled', 'disabled')
         btn.innerHTML = 'browser not supported'
       }());
+    </script>
+    
+    <script> // https://wzrd.in/standalone/dom-to-image@latest
+    !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var n;"undefined"!=typeof window?n=window:"undefined"!=typeof global?n=global:"undefined"!=typeof self&&(n=self),n.domToImage=e()}}(function(){return function e(n,t,r){function o(u,c){if(!t[u]){if(!n[u]){var a="function"==typeof require&&require;if(!c&&a)return a(u,!0);if(i)return i(u,!0);var f=new Error("Cannot find module '"+u+"'");throw f.code="MODULE_NOT_FOUND",f}var l=t[u]={exports:{}};n[u][0].call(l.exports,function(e){var t=n[u][1][e];return o(t?t:e)},l,l.exports,e,n,t,r)}return t[u].exports}for(var i="function"==typeof require&&require,u=0;u<r.length;u++)o(r[u]);return o}({1:[function(e,n,t){!function(e){"use strict";function t(e,n){function t(e){return n.bgcolor&&(e.style.backgroundColor=n.bgcolor),n.width&&(e.style.width=n.width+"px"),n.height&&(e.style.height=n.height+"px"),n.style&&Object.keys(n.style).forEach(function(t){e.style[t]=n.style[t]}),e}return n=n||{},Promise.resolve(e).then(function(e){return a(e,n.filter,!0)}).then(f).then(l).then(t).then(function(t){return s(t,n.width||e.scrollWidth,n.height||e.scrollHeight)})}function r(e,n){return c(e,n||{}).then(function(n){return n.getContext("2d").getImageData(0,0,e.scrollWidth,e.scrollHeight).data})}function o(e,n){return c(e,n||{}).then(function(e){return e.toDataURL()})}function i(e,n){return n=n||{},c(e,n).then(function(e){return e.toDataURL("image/jpeg",n.quality||1)})}function u(e,n){return c(e,n||{}).then(p.canvasToBlob)}function c(e,n){function r(e){var t=document.createElement("canvas");if(t.width=n.width||e.scrollWidth,t.height=n.height||e.scrollHeight,n.bgcolor){var r=t.getContext("2d");r.fillStyle=n.bgcolor,r.fillRect(0,0,t.width,t.height)}return t}return t(e,n).then(p.makeImage).then(p.delay(100)).then(function(n){var t=r(e);return t.getContext("2d").drawImage(n,0,0),t})}function a(e,n,t){function r(e){return e instanceof HTMLCanvasElement?p.makeImage(e.toDataURL()):e.cloneNode(!1)}function o(e,n,t){function r(e,n,t){var r=Promise.resolve();return n.forEach(function(n){r=r.then(function(){return a(n,t)}).then(function(n){n&&e.appendChild(n)})}),r}var o=e.childNodes;return 0===o.length?Promise.resolve(n):r(n,p.asArray(o),t).then(function(){return n})}function i(e,n){function t(){function t(e,n){function t(e,n){p.asArray(e).forEach(function(t){n.setProperty(t,e.getPropertyValue(t),e.getPropertyPriority(t))})}e.cssText?n.cssText=e.cssText:t(e,n)}t(window.getComputedStyle(e),n.style)}function r(){function t(t){function r(e,n,t){function r(e){var n=e.getPropertyValue("content");return e.cssText+" content: "+n+";"}function o(e){function n(n){return n+": "+e.getPropertyValue(n)+(e.getPropertyPriority(n)?" !important":"")}return p.asArray(e).map(n).join("; ")+";"}var i="."+e+":"+n,u=t.cssText?r(t):o(t);return document.createTextNode(i+"{"+u+"}")}var o=window.getComputedStyle(e,t),i=o.getPropertyValue("content");if(""!==i&&"none"!==i){var u=p.uid();n.className=n.className+" "+u;var c=document.createElement("style");c.appendChild(r(u,t,o)),n.appendChild(c)}}[":before",":after"].forEach(function(e){t(e)})}function o(){e instanceof HTMLTextAreaElement&&(n.innerHTML=e.value),e instanceof HTMLInputElement&&n.setAttribute("value",e.value)}function i(){n instanceof SVGElement&&(n.setAttribute("xmlns","http://www.w3.org/2000/svg"),n instanceof SVGRectElement&&["width","height"].forEach(function(e){var t=n.getAttribute(e);t&&n.style.setProperty(e,t)}))}return n instanceof Element?Promise.resolve().then(t).then(r).then(o).then(i).then(function(){return n}):n}return t||!n||n(e)?Promise.resolve(e).then(r).then(function(t){return o(e,t,n)}).then(function(n){return i(e,n)}):Promise.resolve()}function f(e){return y.resolveAll().then(function(n){var t=document.createElement("style");return e.appendChild(t),t.appendChild(document.createTextNode(n)),e})}function l(e){return w.inlineAll(e).then(function(){return e})}function s(e,n,t){return Promise.resolve(e).then(function(e){return e.setAttribute("xmlns","http://www.w3.org/1999/xhtml"),(new XMLSerializer).serializeToString(e)}).then(p.escapeXhtml).then(function(e){return'<foreignObject x="0" y="0" width="100%" height="100%">'+e+"</foreignObject>"}).then(function(e){return'<svg xmlns="http://www.w3.org/2000/svg" width="'+n+'" height="'+t+'">'+e+"</svg>"}).then(function(e){return"data:image/svg+xml;charset=utf-8,"+e})}function h(){function e(){var e="application/font-woff",n="image/jpeg";return{woff:e,woff2:e,ttf:"application/font-truetype",eot:"application/vnd.ms-fontobject",png:"image/png",jpg:n,jpeg:n,gif:"image/gif",tiff:"image/tiff",svg:"image/svg+xml"}}function n(e){var n=/\.([^\.\/]*?)$/g.exec(e);return n?n[1]:""}function t(t){var r=n(t).toLowerCase();return e()[r]||""}function r(e){return-1!==e.search(/^(data:)/)}function o(e){return new Promise(function(n){for(var t=window.atob(e.toDataURL().split(",")[1]),r=t.length,o=new Uint8Array(r),i=0;r>i;i++)o[i]=t.charCodeAt(i);n(new Blob([o],{type:"image/png"}))})}function i(e){return e.toBlob?new Promise(function(n){e.toBlob(n)}):o(e)}function u(e,n){var t=document.implementation.createHTMLDocument(),r=t.createElement("base");t.head.appendChild(r);var o=t.createElement("a");return t.body.appendChild(o),r.href=n,o.href=e,o.href}function c(){var e=0;return function(){function n(){return("0000"+(Math.random()*Math.pow(36,4)<<0).toString(36)).slice(-4)}return"u"+n()+e++}}function a(e){return new Promise(function(n,t){var r=new Image;r.onload=function(){n(r)},r.onerror=t,r.src=e})}function f(e){var n=3e4;return new Promise(function(t){function r(){if(4===u.readyState){if(200!==u.status)return void i("cannot fetch resource: "+e+", status: "+u.status);var n=new FileReader;n.onloadend=function(){var e=n.result.split(/,/)[1];t(e)},n.readAsDataURL(u.response)}}function o(){i("timeout of "+n+"ms occured while fetching resource: "+e)}function i(e){console.error(e),t("")}var u=new XMLHttpRequest;u.onreadystatechange=r,u.ontimeout=o,u.responseType="blob",u.timeout=n,u.open("GET",e,!0),u.send()})}function l(e,n){return"data:"+n+";base64,"+e}function s(e){return e.replace(/([.*+?^${}()|\[\]\/\\])/g,"\\$1")}function h(e){return function(n){return new Promise(function(t){setTimeout(function(){t(n)},e)})}}function d(e){for(var n=[],t=e.length,r=0;t>r;r++)n.push(e[r]);return n}function m(e){return e.replace(/#/g,"%23").replace(/\n/g,"%0A")}return{escape:s,parseExtension:n,mimeType:t,dataAsUrl:l,isDataUrl:r,canvasToBlob:i,resolveUrl:u,getAndEncode:f,uid:c(),delay:h,asArray:d,escapeXhtml:m,makeImage:a}}function d(){function e(e){return-1!==e.search(o)}function n(e){for(var n,t=[];null!==(n=o.exec(e));)t.push(n[1]);return t.filter(function(e){return!p.isDataUrl(e)})}function t(e,n,t,r){function o(e){return new RegExp("(url\\(['\"]?)("+p.escape(e)+")(['\"]?\\))","g")}return Promise.resolve(n).then(function(e){return t?p.resolveUrl(e,t):e}).then(r||p.getAndEncode).then(function(e){return p.dataAsUrl(e,p.mimeType(n))}).then(function(t){return e.replace(o(n),"$1"+t+"$3")})}function r(r,o,i){function u(){return!e(r)}return u()?Promise.resolve(r):Promise.resolve(r).then(n).then(function(e){var n=Promise.resolve(r);return e.forEach(function(e){n=n.then(function(n){return t(n,e,o,i)})}),n})}var o=/url\(['"]?([^'"]+?)['"]?\)/g;return{inlineAll:r,shouldProcess:e,impl:{readUrls:n,inline:t}}}function m(){function e(){return n(document).then(function(e){return Promise.all(e.map(function(e){return e.resolve()}))}).then(function(e){return e.join("\n")})}function n(){function e(e){return e.filter(function(e){return e.type===CSSRule.FONT_FACE_RULE}).filter(function(e){return v.shouldProcess(e.style.getPropertyValue("src"))})}function n(e){var n=[];return e.forEach(function(e){try{p.asArray(e.cssRules||[]).forEach(n.push.bind(n))}catch(t){console.log("Error while reading CSS rules from "+e.href,t.toString())}}),n}function t(e){return{resolve:function(){var n=(e.parentStyleSheet||{}).href;return v.inlineAll(e.cssText,n)},src:function(){return e.style.getPropertyValue("src")}}}return Promise.resolve(p.asArray(document.styleSheets)).then(n).then(e).then(function(e){return e.map(t)})}return{resolveAll:e,impl:{readAll:n}}}function g(){function e(e){function n(n){return p.isDataUrl(e.src)?Promise.resolve():Promise.resolve(e.src).then(n||p.getAndEncode).then(function(n){return p.dataAsUrl(n,p.mimeType(e.src))}).then(function(n){return new Promise(function(t,r){e.onload=t,e.onerror=r,e.src=n})})}return{inline:n}}function n(t){function r(e){var n=e.style.getPropertyValue("background");return n?v.inlineAll(n).then(function(n){e.style.setProperty("background",n,e.style.getPropertyPriority("background"))}).then(function(){return e}):Promise.resolve(e)}return t instanceof Element?r(t).then(function(){return t instanceof HTMLImageElement?e(t).inline():Promise.all(p.asArray(t.childNodes).map(function(e){return n(e)}))}):Promise.resolve(t)}return{inlineAll:n,impl:{newImage:e}}}var p=h(),v=d(),y=m(),w=g(),P={toSvg:t,toPng:o,toJpeg:i,toBlob:u,toPixelData:r,impl:{fontFaces:y,images:w,util:p,inliner:v}};"undefined"!=typeof n?n.exports=P:e.domtoimage=P}(this)},{}]},{},[1])(1)});
     </script>
   </body>
 </html>
