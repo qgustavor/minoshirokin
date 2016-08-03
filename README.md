@@ -12,4 +12,4 @@ Noun 1. ransom
 * Safe random enforced: no guessing timestamps from the result
 * It can be download: you can run it far from the civilization
 
-Inspirated by http://www.ransomizer.com/
+Inspired by http://www.ransomizer.com/
