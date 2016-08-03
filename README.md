@@ -1,10 +1,9 @@
 # minoshirokin
+a web application to create ransom notes.
 
 身の代金  
 Reading: みのしろきん (minoshirokin)  
 Noun 1. ransom
-
-A web application which create ransom notes.
 
 ## Features:
 
