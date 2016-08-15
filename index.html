@@ -133,6 +133,10 @@
         '', '', '', '', '', '', '', '', '', '',
         '', '', '', '', '', '', '', '', '', '',
         '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '',
+        '', '', '', '', '', '', '', '', '', '',
+        'underline', 'underline',
         'underline', 'underline',
         'underline', 'underline',
         'underline', 'underline',
@@ -191,7 +195,7 @@
         text.split(' ')
         .forEach(word => {
           if (!word) return
-          if (rand(0, 1) === 0) {
+          if (rand(0, word.length) < 3) {
             letter2html.call(output, word)
           } else {
             const el = document.createElement('div')
@@ -232,11 +236,12 @@
           zIndex: rand(0, 1000),
           borderRadius: `${rand(0, 3)}px ${rand(0, 3)}px ${rand(0, 3)}px ${rand(0, 3)}px`,
           fontFamily: fonts[rand(0, fonts.length - 1)],
-          fontSize: (rand(9, 13) / 10) + 'em',
+          fontSize: (rand(9, 16) / 10) + 'em',
           letterSpacing: (rand(-1, 5) / 10) + 'em',
           textDecoration: decorations[rand(0, decorations.length - 1)],
           textTransform: transforms[rand(0, transforms.length - 1)] || 'none',
           fontWeight: `${rand(0, 9)}00`,
+          filter: rand(0, 29) ? '' : 'invert(1)',
           position: 'relative'
         })
         this.appendChild(el)
@@ -248,7 +253,7 @@
         .then(dataUrl => {
           const anchor = document.createElement('a')
           anchor.href = dataUrl
-          anchor.download = 'random.png'
+          anchor.download = 'ransom.png'
           document.body.appendChild(anchor)
           anchor.click()
           document.body.removeChild(anchor)
