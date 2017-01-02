@@ -135,9 +135,9 @@
       saveBtn.addEventListener('click', handleSave)
       
       for (let i  = 0, len = colorInputs.length; i < len; i++) {
-        colorInputs[i].value = '#' + i < 5
-        ? [1,2,3].map(e=>('00'+rand(120, 255).toString(16)).substr(-2)).join('')
-        : ('00'+rand(120, 255).toString(16)).substr(-2).repeat(3)
+        colorInputs[i].value = i < 5
+        ? '#' + [1,2,3].map(e=>('00'+rand(120, 255).toString(16)).substr(-2)).join('')
+        : '#' + ('00'+rand(120, 255).toString(16)).substr(-2).repeat(3)
       }
       
       fontInput.value = fontInput.value || ['serif', 'sans-serif', 'monospace', 'cursive'].join('\r\n')
