@@ -134,8 +134,10 @@
       form.addEventListener('submit', handleSubmit)
       saveBtn.addEventListener('click', handleSave)
       
-      for (input of colorInputs) {
-        input.value = '#' + [1,2,3].map(e=>('00'+rand(120, 255).toString(16)).substr(-2)).join('')
+      for (let i  = 0, len = colorInputs.length; i < len; i++) {
+        colorInputs[i].value = '#' + i < 5
+        ? [1,2,3].map(e=>('00'+rand(120, 255).toString(16)).substr(-2)).join('')
+        : ('00'+rand(120, 255).toString(16)).substr(-2).repeat(3)
       }
       
       fontInput.value = fontInput.value || ['serif', 'sans-serif', 'monospace', 'cursive'].join('\r\n')
@@ -150,6 +152,15 @@
           return rand(min, max)
         }
         return min + (byteArray[0] % range)
+      }
+      
+      // https://24ways.org/2010/calculating-color-contrast/
+      function isDarkColorYIQ (hexcolor){
+	      const r = parseInt(hexcolor.substr(0,2), 16)
+	      const g = parseInt(hexcolor.substr(2,2), 16)
+	      const b = parseInt(hexcolor.substr(4,2), 16)
+	      const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
+	      return yiq < 128
       }
       
       function handleSubmit (evt) {
@@ -198,6 +209,7 @@
       function letter2html (letter) {
         if (!letter.trim()) return
         const el = document.createElement('div')
+        const baseBackgroundColor = colors[rand(0, 9)]
         el.textContent = letter
         Object.assign(el.style, {
           display: 'inline-block',
@@ -205,12 +217,12 @@
           background: `linear-gradient(${rand(0, 180)}deg, transparent, hsla(0, 0%, ${rand(0, 10)}%, ${rand(0, 5)/100})),
           ${rand(0, 3) === 0 ? `url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSIjY2NjIj48L3JlY3Q+Cjwvc3ZnPg==),` : ''}
           linear-gradient(${rand(170, 190)}deg, transparent ${rand(30, 50)}%, hsla(0, 0%, 0%, ${rand(0, 10)/100}) ${rand(50, 80)}%),
-          ${colors[rand(0, 9)]}`,
+          ${baseBackgroundColor}`,
           margin: `${rand(-15, 5)}px ${rand(0, 5)}px`,
           padding: `${rand(1, 8)}px ${rand(1, 8)}px`,
           boxShadow: `${shadowX * rand(0, 2)}px ${shadowY * rand(0, 2)}px ${rand(0, 5)}px hsla(0, 0%, ${rand(0, 10)}%, ${rand(0, 30)/100})`,
           textShadow: `${shadowX * rand(0, 2)}px ${shadowY * rand(0, 2)}px ${rand(0, 5)}px hsla(0, 0%, ${rand(0, 10)}%, ${rand(0, 10)/100})`,
-          color: `hsl(0, 0%, ${rand(0, 20)}%)`,
+          color: `hsl(0, 0%, ${isDarkColorYIQ(baseBackgroundColor) ? rand(80, 100) : rand(0, 20)}%)`,
           zIndex: rand(0, 1000),
           borderRadius: `${rand(0, 3)}px ${rand(0, 3)}px ${rand(0, 3)}px ${rand(0, 3)}px`,
           fontFamily: fonts[rand(0, fonts.length - 1)],
